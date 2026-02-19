@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find My Housing Scheme — Ireland Housing Finder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-deep: #1a4a2e;
+      --green-mid: #2d7a4a;
+      --green-light: #4caf7a;
+      --green-pale: #e8f5ec;
+      --gold: #c8973a;
+      --gold-light: #f0d98a;
+      --cream: #faf8f3;
+      --white: #ffffff;
+      --text-dark: #1c2b1e;
+      --text-mid: #3d5442;
+      --text-light: #6b8870;
+      --border: #d4e6da;
+      --shadow-sm: 0 2px 8px rgba(26,74,46,0.08);
+      --shadow-md: 0 8px 32px rgba(26,74,46,0.12);
+      --shadow-lg: 0 24px 64px rgba(26,74,46,0.2);
+      --radius: 20px;
+      --radius-sm: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--green-deep);
+      color: var(--text-dark);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ===== ANIMATED BACKGROUND ===== */
+    .bg-canvas {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(160deg, #0d2d1a 0%, #1a4a2e 40%, #0f3520 100%);
+      z-index: 0;
+    }
+
+    .bg-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.25;
+      animation: drift 12s ease-in-out infinite alternate;
+    }
+
+    .bg-blob-1 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, #2d7a4a, transparent);
+      top: -100px; left: -100px;
+      animation-delay: 0s;
+    }
+
+    .bg-blob-2 {
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, #c8973a, transparent);
+      bottom: -80px; right: -80px;
+      animation-delay: -4s;
+    }
+
+    .bg-blob-3 {
+      width: 300px; height: 300px;
+      background: radial-gradient(circle, #4caf7a, transparent);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      animation-delay: -8s;
+    }
+
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to { transform: translate(30px, 20px) scale(1.1); }
+    }
+
+    /* ===== LAYOUT ===== */
+    .page {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    /* ===== NAV BAR ===== */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(13, 45, 26, 0.8);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: white;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .nav-brand-icon {
+      font-size: 1.3rem;
+    }
+
+    .nav-back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: rgba(255,255,255,0.6);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-back:hover { color: white; }
+
+    /* ===== WIZARD CARD ===== */
+    .wizard-wrapper {
+      width: 100%;
+      max-width: 640px;
+      margin-top: 5rem;
+    }
+
+    .wizard-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      animation: fadeDown 0.5s ease both;
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .wizard-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(200,151,58,0.18);
+      border: 1px solid rgba(200,151,58,0.35);
+      color: var(--gold-light);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 100px;
+      margin-bottom: 1rem;
+    }
+
+    .wizard-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-weight: 700;
+      color: white;
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+    }
+
+    .wizard-title em {
+      font-style: italic;
+      color: var(--gold-light);
+    }
+
+    .wizard-sub {
+      color: rgba(255,255,255,0.6);
+      font-size: 0.95rem;
+      font-weight: 300;
+    }
+
+    /* ===== PROGRESS BAR ===== */
+    .progress-bar-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.75rem;
+      animation: fadeDown 0.5s ease 0.1s both;
+    }
+
+    .progress-steps {
+      display: flex;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .progress-step {
+      flex: 1;
+      height: 4px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 4px;
+      overflow: hidden;
+      transition: all 0.4s ease;
+    }
+
+    .progress-step.done {
+      background: var(--green-light);
+    }
+
+    .progress-step.active {
+      background: rgba(255,255,255,0.25);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-step.active::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, var(--gold), var(--gold-light));
+      animation: fillBar 0.5s ease forwards;
+    }
+
+    @keyframes fillBar {
+      from { transform: scaleX(0); transform-origin: left; }
+      to { transform: scaleX(1); transform-origin: left; }
+    }
+
+    .progress-label {
+      color: rgba(255,255,255,0.5);
+      font-size: 0.78rem;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    /* ===== QUESTION CARD ===== */
+    .question-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      padding: 2.5rem;
+      box-shadow: var(--shadow-lg);
+      animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(24px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .question-card.slide-out {
+      animation: slideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+
+    @keyframes slideOut {
+      from { opacity: 1; transform: translateY(0) scale(1); }
+      to { opacity: 0; transform: translateY(-20px) scale(0.97); }
+    }
+
+    .question-number {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-light);
+      margin-bottom: 0.6rem;
+    }
+
+    .question-text {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.45rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      line-height: 1.3;
+      margin-bottom: 0.5rem;
+    }
+
+    .question-hint {
+      font-size: 0.85rem;
+      color: var(--text-light);
+      margin-bottom: 2rem;
+    }
+
+    /* ===== ANSWER OPTIONS ===== */
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .option-btn {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1.1rem 1.25rem;
+      background: var(--cream);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      text-align: left;
+      width: 100%;
+      font-family: 'DM Sans', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .option-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--green-pale), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .option-btn:hover {
+      border-color: var(--green-mid);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .option-btn:hover::before { opacity: 1; }
+
+    .option-btn:active { transform: translateY(0); }
+
+    .option-icon {
+      font-size: 1.6rem;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .option-content {
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .option-label {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .option-desc {
+      font-size: 0.82rem;
+      color: var(--text-light);
+      font-weight: 400;
+    }
+
+    .option-arrow {
+      color: var(--green-light);
+      font-size: 1.1rem;
+      opacity: 0;
+      transition: all 0.2s;
+      position: relative;
+      z-index: 1;
+    }
+
+    .option-btn:hover .option-arrow { opacity: 1; transform: translateX(4px); }
+
+    /* ===== BACK BUTTON ===== */
+    .wizard-back-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.5);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 0.5rem 0;
+      margin-top: 1.25rem;
+      transition: color 0.2s;
+    }
+
+    .wizard-back-btn:hover { color: rgba(255,255,255,0.85); }
+    .wizard-back-btn:disabled { opacity: 0; pointer-events: none; }
+
+    /* ===== RESULTS SCREEN ===== */
+    .results-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow-lg);
+      animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+
+    .results-header {
+      background: linear-gradient(135deg, var(--green-deep), #1c5a38);
+      padding: 2.5rem 2.5rem 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .results-header::after {
+      content: '🍀';
+      position: absolute;
+      bottom: -10px;
+      right: 20px;
+      font-size: 5rem;
+      opacity: 0.1;
+    }
+
+    .results-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(76,175,122,0.25);
+      border: 1px solid rgba(76,175,122,0.4);
+      color: #a8e6c0;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 100px;
+      margin-bottom: 1rem;
+    }
+
+    .results-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 0.5rem;
+      line-height: 1.25;
+    }
+
+    .results-subtitle {
+      color: rgba(255,255,255,0.65);
+      font-size: 0.9rem;
+    }
+
+    .results-summary {
+      padding: 1.75rem 2.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .summary-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      background: var(--green-pale);
+      border: 1px solid var(--border);
+      color: var(--green-deep);
+      font-size: 0.78rem;
+      font-weight: 600;
+      border-radius: 100px;
+    }
+
+    .schemes-list {
+      padding: 0;
+    }
+
+    .scheme-result {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.5rem 2.5rem;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .scheme-result:hover { background: var(--cream); }
+    .scheme-result:last-child { border-bottom: none; }
+
+    .scheme-result-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-sm);
+      background: var(--green-pale);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .scheme-result-body { flex: 1; }
+
+    .scheme-result-match {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--green-mid);
+      margin-bottom: 3px;
+    }
+
+    .scheme-result-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 4px;
+    }
+
+    .scheme-result-desc {
+      font-size: 0.82rem;
+      color: var(--text-light);
+      line-height: 1.5;
+    }
+
+    .scheme-result-arrow {
+      color: var(--green-light);
+      font-size: 1rem;
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+
+    .results-footer {
+      padding: 1.5rem 2.5rem;
+      background: var(--cream);
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-view-all {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--green-deep);
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 100px;
+      padding: 0.9rem 1.75rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-view-all:hover { background: var(--green-mid); transform: translateY(-1px); }
+
+    .btn-restart {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--text-mid);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border: 2px solid var(--border);
+      border-radius: 100px;
+      padding: 0.8rem 1.5rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-restart:hover { border-color: var(--green-light); color: var(--green-deep); }
+
+    /* ===== NO RESULTS ===== */
+    .no-results {
+      padding: 2.5rem;
+      text-align: center;
+    }
+
+    .no-results-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .no-results h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--text-dark);
+      margin-bottom: 0.5rem;
+    }
+    .no-results p { font-size: 0.9rem; color: var(--text-light); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      .question-card, .results-header, .results-summary,
+      .scheme-result, .results-footer { padding-left: 1.5rem; padding-right: 1.5rem; }
+      .question-card { padding: 1.75rem 1.5rem; }
+      .wizard-wrapper { margin-top: 4.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-canvas">
+  <div class="bg-blob bg-blob-1"></div>
+  <div class="bg-blob bg-blob-2"></div>
+  <div class="bg-blob bg-blob-3"></div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-brand">
+    <span class="nav-brand-icon">🍀</span>
+    Ireland Housing Finder
+  </a>
+  <a href="index.html" class="nav-back">← View all schemes</a>
+</nav>
+
+<!-- MAIN -->
+<div class="page">
+  <div class="wizard-wrapper">
+
+    <!-- HEADER (shown during quiz) -->
+    <div class="wizard-header" id="wizard-header">
+      <div class="wizard-eyebrow">✦ Quick Finder</div>
+      <h1 class="wizard-title">What's your<br><em>housing situation?</em></h1>
+      <p class="wizard-sub">Answer 3 quick questions — we'll show you exactly which schemes you qualify for.</p>
+    </div>
+
+    <!-- PROGRESS BAR -->
+    <div class="progress-bar-wrap" id="progress-wrap" style="display:none">
+      <div class="progress-steps" id="progress-steps"></div>
+      <div class="progress-label" id="progress-label">Step 1 of 3</div>
+    </div>
+
+    <!-- QUESTION CARD (dynamic) -->
+    <div id="quiz-area"></div>
+
+    <!-- BACK BUTTON -->
+    <button class="wizard-back-btn" id="back-btn" onclick="goBack()" disabled>← Go back</button>
+
+  </div>
+</div>
+
+<script>
+// ===== QUESTION TREE =====
+// Each question has: id, text, hint, options[]
+// Each option has: icon, label, desc, answer (stored value), next (question id or 'result')
+const QUESTIONS = {
+  q1: {
+    id: 'q1',
+    number: 'Question 1 of 3',
+    text: 'What is your main housing goal right now?',
+    hint: 'Choose the option that best describes what you\'re trying to do.',
+    options: [
+      { icon: '🏡', label: 'Buy a home', desc: 'I want to purchase a property', answer: 'buying', next: 'q2_buying' },
+      { icon: '🔑', label: 'Rent a home', desc: 'I need help with renting privately', answer: 'renting', next: 'q2_renting' },
+      { icon: '🏢', label: 'Find social housing', desc: 'I need council or affordable housing', answer: 'social', next: 'q2_social' },
+      { icon: '🔨', label: 'Improve my home', desc: 'Grants for renovation, energy or adaptations', answer: 'grants', next: 'q2_grants' },
+    ]
+  },
+
+  // ===== BUYING BRANCH =====
+  q2_buying: {
+    id: 'q2_buying',
+    number: 'Question 2 of 3',
+    text: 'Have you owned a home before?',
+    hint: 'This affects which schemes you\'re eligible for.',
+    options: [
+      { icon: '🆕', label: 'No — I\'m a first-time buyer', desc: 'Never owned a property before', answer: 'ftb', next: 'q3_buying_ftb' },
+      { icon: '🔄', label: 'Yes, but I\'m starting fresh', desc: 'Separated, divorced, or after insolvency (Fresh Start)', answer: 'fresh_start', next: 'q3_buying_fresh' },
+      { icon: '📈', label: 'Yes, I already own a home', desc: 'Looking to move or invest', answer: 'existing_owner', next: 'q3_buying_owner' },
+    ]
+  },
+
+  q3_buying_ftb: {
+    id: 'q3_buying_ftb',
+    number: 'Question 3 of 3',
+    text: 'What type of property are you looking to buy?',
+    hint: 'Some schemes only apply to new builds.',
+    options: [
+      { icon: '🏗️', label: 'A brand new home', desc: 'Newly built or self-build', answer: 'new_build', next: 'result' },
+      { icon: '🏘️', label: 'A second-hand home', desc: 'An existing property', answer: 'second_hand', next: 'result' },
+      { icon: '🤷', label: 'Not sure yet', desc: 'I\'m still exploring options', answer: 'either', next: 'result' },
+    ]
+  },
+
+  q3_buying_fresh: {
+    id: 'q3_buying_fresh',
+    number: 'Question 3 of 3',
+    text: 'What type of property are you looking to buy?',
+    hint: 'The Local Authority Home Loan is available to Fresh Start applicants.',
+    options: [
+      { icon: '🏗️', label: 'A brand new home', desc: 'Newly built or self-build', answer: 'new_build', next: 'result' },
+      { icon: '🏘️', label: 'A second-hand home', desc: 'An existing property', answer: 'second_hand', next: 'result' },
+      { icon: '🤷', label: 'Not sure yet', desc: 'I\'m still exploring options', answer: 'either', next: 'result' },
+    ]
+  },
+
+  q3_buying_owner: {
+    id: 'q3_buying_owner',
+    number: 'Question 3 of 3',
+    text: 'Are you in mortgage arrears or financial difficulty?',
+    hint: 'There are specific supports if you\'re struggling with your mortgage.',
+    options: [
+      { icon: '⚠️', label: 'Yes, I\'m struggling with my mortgage', desc: 'Behind on payments or at risk', answer: 'arrears', next: 'result' },
+      { icon: '✅', label: 'No, my finances are stable', desc: 'Looking to upgrade or move', answer: 'stable', next: 'result' },
+    ]
+  },
+
+  // ===== RENTING BRANCH =====
+  q2_renting: {
+    id: 'q2_renting',
+    number: 'Question 2 of 3',
+    text: 'What is your current employment situation?',
+    hint: 'This helps identify the right rental support for you.',
+    options: [
+      { icon: '💼', label: 'I am working', desc: 'Employed full-time or part-time', answer: 'employed', next: 'q3_renting_employed' },
+      { icon: '📋', label: 'I\'m on a social welfare payment', desc: 'Unemployed, disability, etc.', answer: 'welfare', next: 'q3_renting_welfare' },
+      { icon: '📊', label: 'Middle income, can\'t afford market rent', desc: 'Earning but private rent is too expensive', answer: 'middle_income', next: 'q3_renting_middle' },
+    ]
+  },
+
+  q3_renting_employed: {
+    id: 'q3_renting_employed',
+    number: 'Question 3 of 3',
+    text: 'Are you currently on the social housing list?',
+    hint: 'Being on the list opens up more support options.',
+    options: [
+      { icon: '✅', label: 'Yes, I\'m on the housing list', desc: 'Registered with my local authority', answer: 'on_list', next: 'result' },
+      { icon: '❌', label: 'No, not on the list', desc: 'Haven\'t applied or don\'t qualify', answer: 'not_on_list', next: 'result' },
+      { icon: '🔍', label: 'I\'m not sure', desc: 'I haven\'t checked recently', answer: 'unsure', next: 'result' },
+    ]
+  },
+
+  q3_renting_welfare: {
+    id: 'q3_renting_welfare',
+    number: 'Question 3 of 3',
+    text: 'How long have you been renting privately?',
+    hint: 'This affects which supplement or support you can access.',
+    options: [
+      { icon: '📅', label: 'Less than 6 months', desc: 'Recently started renting', answer: 'short_term', next: 'result' },
+      { icon: '🗓️', label: '6 months or more', desc: 'Renting for a while now', answer: 'long_term', next: 'result' },
+      { icon: '🆘', label: 'I have an urgent / emergency need', desc: 'At risk of homelessness', answer: 'urgent', next: 'result' },
+    ]
+  },
+
+  q3_renting_middle: {
+    id: 'q3_renting_middle',
+    number: 'Question 3 of 3',
+    text: 'What is your approximate household income?',
+    hint: 'Cost Rental has income limits to ensure it reaches those who need it.',
+    options: [
+      { icon: '💶', label: 'Under €53,000 net/year', desc: 'Below Cost Rental threshold', answer: 'low_mid', next: 'result' },
+      { icon: '💰', label: '€53,000 – €120,000 net/year', desc: 'Within Cost Rental income band', answer: 'mid', next: 'result' },
+      { icon: '📈', label: 'Over €120,000 net/year', desc: 'Above typical scheme limits', answer: 'high', next: 'result' },
+    ]
+  },
+
+  // ===== SOCIAL BRANCH =====
+  q2_social: {
+    id: 'q2_social',
+    number: 'Question 2 of 3',
+    text: 'Which best describes your situation?',
+    hint: 'This helps us find the right social housing pathway for you.',
+    options: [
+      { icon: '📝', label: 'I need to apply for social housing', desc: 'Not yet on any housing list', answer: 'apply', next: 'q3_social_apply' },
+      { icon: '✅', label: 'I\'m already on the housing list', desc: 'Waiting for a home', answer: 'waiting', next: 'q3_social_waiting' },
+      { icon: '⚠️', label: 'I\'m at risk of losing my home', desc: 'Mortgage arrears or eviction', answer: 'at_risk', next: 'q3_social_risk' },
+    ]
+  },
+
+  q3_social_apply: {
+    id: 'q3_social_apply',
+    number: 'Question 3 of 3',
+    text: 'Do you currently receive any social welfare payments?',
+    hint: 'Some supports require you to be on a qualifying payment.',
+    options: [
+      { icon: '✅', label: 'Yes, I receive welfare payments', desc: 'e.g. Job Seekers, Disability, Carer\'s', answer: 'welfare', next: 'result' },
+      { icon: '❌', label: 'No, I\'m not on welfare', desc: 'Working or no current payments', answer: 'no_welfare', next: 'result' },
+    ]
+  },
+
+  q3_social_waiting: {
+    id: 'q3_social_waiting',
+    number: 'Question 3 of 3',
+    text: 'Are you currently renting privately while you wait?',
+    hint: 'HAP can help bridge the gap while you wait for a council home.',
+    options: [
+      { icon: '🏠', label: 'Yes, renting privately', desc: 'Paying rent to a private landlord', answer: 'renting', next: 'result' },
+      { icon: '👨‍👩‍👧', label: 'Staying with family or friends', desc: 'No fixed private rental', answer: 'staying_with_others', next: 'result' },
+      { icon: '⚠️', label: 'My housing is unstable or unsafe', desc: 'Urgent housing situation', answer: 'unstable', next: 'result' },
+    ]
+  },
+
+  q3_social_risk: {
+    id: 'q3_social_risk',
+    number: 'Question 3 of 3',
+    text: 'What type of risk are you facing?',
+    hint: 'Different schemes protect against different risks.',
+    options: [
+      { icon: '🏦', label: 'Mortgage arrears', desc: 'Behind on home loan payments', answer: 'mortgage_arrears', next: 'result' },
+      { icon: '📄', label: 'Eviction or end of tenancy', desc: 'Landlord ending my rental', answer: 'eviction', next: 'result' },
+    ]
+  },
+
+  // ===== GRANTS BRANCH =====
+  q2_grants: {
+    id: 'q2_grants',
+    number: 'Question 2 of 3',
+    text: 'What type of improvement are you looking for?',
+    hint: 'We have grants for a wide range of home upgrades.',
+    options: [
+      { icon: '⚡', label: 'Energy efficiency upgrades', desc: 'Insulation, heat pump, solar, windows', answer: 'energy', next: 'q3_grants_energy' },
+      { icon: '🏚️', label: 'Renovate a vacant property', desc: 'Bringing an empty home back to life', answer: 'vacant', next: 'q3_grants_vacant' },
+      { icon: '♿', label: 'Accessibility adaptations', desc: 'Mobility aids, disability adaptations', answer: 'accessibility', next: 'q3_grants_access' },
+    ]
+  },
+
+  q3_grants_energy: {
+    id: 'q3_grants_energy',
+    number: 'Question 3 of 3',
+    text: 'Do you receive any social welfare payments?',
+    hint: 'Welfare recipients may qualify for FREE upgrades under the Warmer Homes Scheme.',
+    options: [
+      { icon: '✅', label: 'Yes — e.g. Fuel Allowance, Job Seekers', desc: 'I receive qualifying welfare payments', answer: 'welfare', next: 'result' },
+      { icon: '❌', label: 'No, I don\'t receive welfare payments', desc: 'Working or retired without qualifying payments', answer: 'no_welfare', next: 'result' },
+    ]
+  },
+
+  q3_grants_vacant: {
+    id: 'q3_grants_vacant',
+    number: 'Question 3 of 3',
+    text: 'Where is the vacant property located?',
+    hint: 'Different grants apply depending on urban or rural location.',
+    options: [
+      { icon: '🌆', label: 'City or large town', desc: 'Dublin, Cork, Galway, Limerick etc.', answer: 'city', next: 'result' },
+      { icon: '🌾', label: 'Small town or village', desc: 'Rural or smaller community', answer: 'rural', next: 'result' },
+    ]
+  },
+
+  q3_grants_access: {
+    id: 'q3_grants_access',
+    number: 'Question 3 of 3',
+    text: 'What level of adaptation is needed?',
+    hint: 'Minor adaptations have a faster, simpler application process.',
+    options: [
+      { icon: '🦽', label: 'Minor adaptations', desc: 'Grab rails, shower seat, stair rail', answer: 'minor', next: 'result' },
+      { icon: '🔧', label: 'Major adaptations', desc: 'Stairlift, wet room, extension for wheelchair', answer: 'major', next: 'result' },
+    ]
+  },
+};
+
+// ===== RESULTS MAPPING =====
+// Maps answer path arrays to scheme IDs
+// Path is array of answer values in order: [q1_answer, q2_answer, q3_answer]
+function getRecommendedSchemes(answers) {
+  const [a1, a2, a3] = answers.map(a => a.answer);
+
+  const all = {
+    // ===== BUYING =====
+    'buying-ftb-new_build': [
+      { id: 'help-to-buy-htb-scheme', match: 'Best match', why: 'Designed exactly for first-time buyers of new builds. Get up to €30,000 back.' },
+      { id: 'first-home-scheme', match: 'Great match', why: 'Government pays up to 30% of your home cost — reducing your mortgage significantly.' },
+      { id: 'local-authority-home-loan', match: 'Also relevant', why: 'If banks won\'t give you enough, this government mortgage may fill the gap.' },
+      { id: 'local-authority-affordable-purchase-scheme', match: 'Consider this', why: 'New affordable homes sold below market price by local authorities.' },
+    ],
+    'buying-ftb-second_hand': [
+      { id: 'local-authority-home-loan', match: 'Best match', why: 'Available for second-hand homes — competitive fixed rate for first-time buyers.' },
+      { id: 'local-authority-affordable-purchase-scheme', match: 'Also relevant', why: 'Check if your local authority has affordable purchase schemes.' },
+    ],
+    'buying-ftb-either': [
+      { id: 'help-to-buy-htb-scheme', match: 'Best match (new builds)', why: 'If you go new build, you can claim up to €30,000 tax back.' },
+      { id: 'first-home-scheme', match: 'Great match (new builds)', why: 'Government equity up to 30% on new build homes.' },
+      { id: 'local-authority-home-loan', match: 'Good for either', why: 'Works for new and second-hand — ideal if banks won\'t lend enough.' },
+      { id: 'local-authority-affordable-purchase-scheme', match: 'Worth exploring', why: 'Below-market homes from local authorities.' },
+    ],
+    'buying-fresh_start-new_build': [
+      { id: 'local-authority-home-loan', match: 'Best match', why: 'Fresh Start applicants are eligible — competitive fixed government mortgage.' },
+      { id: 'help-to-buy-htb-scheme', match: 'Check eligibility', why: 'Some Fresh Start applicants qualify. Check with Revenue.' },
+    ],
+    'buying-fresh_start-second_hand': [
+      { id: 'local-authority-home-loan', match: 'Best match', why: 'Specifically includes Fresh Start applicants for new and second-hand homes.' },
+    ],
+    'buying-fresh_start-either': [
+      { id: 'local-authority-home-loan', match: 'Best match', why: 'Designed for Fresh Start applicants — competitive government mortgage.' },
+      { id: 'local-authority-affordable-purchase-scheme', match: 'Also worth exploring', why: 'Some local authority schemes include Fresh Start applicants.' },
+    ],
+    'buying-existing_owner-arrears': [
+      { id: 'mortgage-to-rent', match: 'Best match', why: 'Stay in your home as a social tenant — your mortgage debt is resolved.' },
+    ],
+    'buying-existing_owner-stable': [
+      { id: 'seai-home-energy-grants', match: 'Relevant', why: 'Improve your existing home\'s energy rating with SEAI grants.' },
+      { id: 'croi-conaithe-cities', match: 'If buying vacant', why: 'Grant up to €50,000 to renovate a vacant city property.' },
+    ],
+
+    // ===== RENTING =====
+    'renting-employed-on_list': [
+      { id: 'housing-assistance-payment-hap', match: 'Best match', why: 'HAP is for people on the housing list who are renting privately. Rent paid directly to landlord.' },
+    ],
+    'renting-employed-not_on_list': [
+      { id: 'secure-tenancy-affordable-rental', match: 'Best match', why: 'Cost Rental offers below-market long-term rentals without needing to be on the housing list.' },
+    ],
+    'renting-employed-unsure': [
+      { id: 'housing-assistance-payment-hap', match: 'If on the list', why: 'Check with your local authority — if you qualify, HAP covers rent while you wait.' },
+      { id: 'secure-tenancy-affordable-rental', match: 'Good alternative', why: 'Cost Rental doesn\'t require being on a housing list.' },
+    ],
+    'renting-welfare-short_term': [
+      { id: 'rent-supplement', match: 'Best match', why: 'Short-term rental support for people on welfare. Applied through your local Intreo Centre.' },
+    ],
+    'renting-welfare-long_term': [
+      { id: 'rent-supplement', match: 'Relevant', why: 'Weekly payment towards rent for those on welfare with limited income.' },
+      { id: 'housing-assistance-payment-hap', match: 'Apply for the housing list', why: 'Getting on the social housing list opens up HAP support.' },
+    ],
+    'renting-welfare-urgent': [
+      { id: 'rent-supplement', match: 'Immediate support', why: 'Apply at your Intreo Centre urgently — emergency cases can be fast-tracked.' },
+      { id: 'housing-assistance-payment-hap', match: 'Longer-term solution', why: 'HAP provides ongoing rental support once on the housing list.' },
+    ],
+    'renting-middle_income-low_mid': [
+      { id: 'secure-tenancy-affordable-rental', match: 'Best match', why: 'Cost Rental is designed for people who earn too much for social housing but can\'t afford market rent.' },
+      { id: 'housing-assistance-payment-hap', match: 'Also check eligibility', why: 'You may qualify for social housing assessment at this income level.' },
+    ],
+    'renting-middle_income-mid': [
+      { id: 'secure-tenancy-affordable-rental', match: 'Best match', why: 'You\'re within the Cost Rental income band — rents set 25–35% below market.' },
+    ],
+    'renting-middle_income-high': [
+      { id: 'secure-tenancy-affordable-rental', match: 'Check thresholds', why: 'Income limits vary by area — Dublin has higher thresholds. Worth checking.' },
+    ],
+
+    // ===== SOCIAL =====
+    'social-apply-welfare': [
+      { id: 'social-housing-local-authority', match: 'Start here', why: 'Apply to your local authority for social housing. Being on welfare strengthens your application.' },
+      { id: 'housing-assistance-payment-hap', match: 'Once on the list', why: 'Once assessed, HAP can provide immediate rental support.' },
+      { id: 'rent-supplement', match: 'Immediate support', why: 'While waiting to be assessed, Rent Supplement can help with rent costs.' },
+    ],
+    'social-apply-no_welfare': [
+      { id: 'social-housing-local-authority', match: 'Apply and be assessed', why: 'You can still apply — income limits apply but working people can qualify.' },
+      { id: 'secure-tenancy-affordable-rental', match: 'Alternative route', why: 'Cost Rental provides affordable renting without needing social housing status.' },
+    ],
+    'social-waiting-renting': [
+      { id: 'housing-assistance-payment-hap', match: 'Best match', why: 'HAP bridges the gap — local authority pays your landlord while you wait for a council home.' },
+    ],
+    'social-waiting-staying_with_others': [
+      { id: 'housing-assistance-payment-hap', match: 'Once you find a rental', why: 'HAP lets you find a private rental and have it paid while on the housing list.' },
+      { id: 'social-housing-local-authority', match: 'Check your priority', why: 'Staying with others due to housing need may increase your priority on the list.' },
+    ],
+    'social-waiting-unstable': [
+      { id: 'housing-assistance-payment-hap', match: 'Urgent — contact your council', why: 'Urgent need cases can be prioritised. Contact your local authority today.' },
+      { id: 'rent-supplement', match: 'Emergency support', why: 'Rent Supplement can provide immediate financial support in emergency situations.' },
+    ],
+    'social-at_risk-mortgage_arrears': [
+      { id: 'mortgage-to-rent', match: 'Best match', why: 'Stay in your home as a social tenant — the Mortgage to Rent scheme resolves arrears and keeps you housed.' },
+    ],
+    'social-at_risk-eviction': [
+      { id: 'housing-assistance-payment-hap', match: 'Act quickly', why: 'Apply to your local authority now — HAP can help you secure new private rental accommodation.' },
+      { id: 'social-housing-local-authority', match: 'Get on the list', why: 'Being at risk of homelessness gives you priority on the social housing list.' },
+      { id: 'rent-supplement', match: 'Financial support', why: 'Rent Supplement can help bridge costs while you find new accommodation.' },
+    ],
+
+    // ===== GRANTS =====
+    'grants-energy-welfare': [
+      { id: 'warmer-homes-scheme', match: 'Best match — it\'s FREE', why: 'Welfare recipients get completely free energy upgrades under the Warmer Homes Scheme.' },
+      { id: 'seai-home-energy-grants', match: 'Also available', why: 'Even with Warmer Homes, additional SEAI grants may be available for specific measures.' },
+    ],
+    'grants-energy-no_welfare': [
+      { id: 'seai-home-energy-grants', match: 'Best match', why: 'Grants from €400 to €24,000+ for insulation, heat pumps, solar panels and more.' },
+    ],
+    'grants-vacant-city': [
+      { id: 'croi-conaithe-cities', match: 'Best match', why: 'Grant up to €50,000 (€70,000 with deep retrofit) to renovate a vacant city property.' },
+    ],
+    'grants-vacant-rural': [
+      { id: 'croi-conaithe-towns', match: 'Best match', why: 'Grant up to €50,000 to renovate a vacant property in towns or villages.' },
+    ],
+    'grants-accessibility-minor': [
+      { id: 'mobility-aids-grant', match: 'Best match', why: 'Fast-tracked grant up to €6,000 for minor mobility aids. Simpler application process.' },
+      { id: 'housing-adaptation-grant', match: 'Also available', why: 'If needs are greater, the full Housing Adaptation Grant covers more extensive works.' },
+    ],
+    'grants-accessibility-major': [
+      { id: 'housing-adaptation-grant', match: 'Best match', why: 'Grant up to €30,000 for major adaptations — stairlifts, wet rooms, widened doors and more.' },
+      { id: 'mobility-aids-grant', match: 'Also relevant', why: 'Additional grant up to €6,000 for mobility-specific items.' },
+    ],
+  };
+
+  const key = `${a1}-${a2}-${a3}`;
+  return all[key] || [];
+}
+
+// ===== ALL SCHEMES DATA (mirroring schemes.json) =====
+const SCHEMES = {
+  'help-to-buy-htb-scheme': { name: 'Help to Buy (HTB) Scheme', icon: '🏡', category: 'Buying', desc: 'Tax rebate up to €30,000 for first-time buyers of new builds.' },
+  'first-home-scheme': { name: 'First Home Scheme', icon: '🔑', category: 'Buying', desc: 'Government pays up to 30% of your new home cost as equity share.' },
+  'local-authority-home-loan': { name: 'Local Authority Home Loan', icon: '🏦', category: 'Buying', desc: 'Government-backed mortgage with competitive fixed rates.' },
+  'local-authority-affordable-purchase-scheme': { name: 'Affordable Purchase Scheme', icon: '🏘️', category: 'Buying', desc: 'New homes sold below market price by local authorities.' },
+  'housing-assistance-payment-hap': { name: 'Housing Assistance Payment (HAP)', icon: '💶', category: 'Renting', desc: 'Local authority pays your rent directly to your landlord.' },
+  'rent-supplement': { name: 'Rent Supplement', icon: '📋', category: 'Renting', desc: 'Weekly means-tested payment to help cover private rent.' },
+  'secure-tenancy-affordable-rental': { name: 'Cost Rental / Affordable Rental', icon: '🔐', category: 'Renting', desc: 'Long-term below-market rents for middle-income earners.' },
+  'social-housing-local-authority': { name: 'Social Housing (Local Authority)', icon: '🏢', category: 'Social Housing', desc: 'Council housing with income-based rent.' },
+  'mortgage-to-rent': { name: 'Mortgage to Rent Scheme', icon: '🔄', category: 'Social Housing', desc: 'Stay in your home as a social tenant — arrears resolved.' },
+  'croi-conaithe-cities': { name: 'Croí Cónaithe (Cities) Grant', icon: '🔨', category: 'Renovation & Grants', desc: 'Up to €50,000 to renovate a vacant city property.' },
+  'croi-conaithe-towns': { name: 'Croí Cónaithe (Towns) Grant', icon: '🏚️', category: 'Renovation & Grants', desc: 'Up to €50,000 to renovate a vacant rural/town property.' },
+  'seai-home-energy-grants': { name: 'SEAI Home Energy Upgrade Grants', icon: '☀️', category: 'Renovation & Grants', desc: 'Grants from €400 to €24,000+ for energy efficiency improvements.' },
+  'warmer-homes-scheme': { name: 'Warmer Homes Scheme (FREE)', icon: '🌡️', category: 'Renovation & Grants', desc: 'Completely free energy upgrades for qualifying welfare recipients.' },
+  'housing-adaptation-grant': { name: 'Housing Adaptation Grant', icon: '♿', category: 'Renovation & Grants', desc: 'Grant up to €30,000 for major disability adaptations.' },
+  'mobility-aids-grant': { name: 'Mobility Aids Housing Grant', icon: '🦽', category: 'Renovation & Grants', desc: 'Grant up to €6,000 for minor mobility aids. Fast-tracked.' },
+};
+
+// ===== STATE =====
+let history = []; // [{questionId, answer: {answer, label, ...}}]
+let currentQuestion = 'q1';
+let totalSteps = 3;
+
+// ===== RENDER QUESTION =====
+function renderQuestion(qId, animate = true) {
+  const q = QUESTIONS[qId];
+  if (!q) return;
+  currentQuestion = qId;
+
+  document.getElementById('wizard-header').style.display = history.length === 0 ? 'block' : 'none';
+  document.getElementById('progress-wrap').style.display = history.length === 0 ? 'none' : 'flex';
+  document.getElementById('back-btn').disabled = history.length === 0;
+
+  if (history.length > 0) {
+    const stepNum = parseInt(q.number.split(' ')[1]);
+    updateProgress(stepNum, totalSteps);
+  }
+
+  const area = document.getElementById('quiz-area');
+  if (animate && area.firstChild) {
+    area.firstChild.classList.add('slide-out');
+    setTimeout(() => _injectQuestion(q, area), 280);
+  } else {
+    _injectQuestion(q, area);
+  }
+}
+
+function _injectQuestion(q, area) {
+  area.innerHTML = `
+    <div class="question-card">
+      <div class="question-number">${q.number}</div>
+      <div class="question-text">${q.text}</div>
+      <div class="question-hint">${q.hint}</div>
+      <div class="options">
+        ${q.options.map(opt => `
+          <button class="option-btn" onclick="selectAnswer(${JSON.stringify(opt).replace(/"/g, '&quot;')})">
+            <span class="option-icon">${opt.icon}</span>
+            <span class="option-content">
+              <span class="option-label">${opt.label}</span>
+              <span class="option-desc">${opt.desc}</span>
+            </span>
+            <span class="option-arrow">→</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ===== SELECT ANSWER =====
+function selectAnswer(opt) {
+  history.push({ questionId: currentQuestion, answer: opt });
+
+  if (opt.next === 'result') {
+    showResults();
+  } else {
+    document.getElementById('wizard-header').style.display = 'none';
+    document.getElementById('progress-wrap').style.display = 'flex';
+    renderQuestion(opt.next);
+  }
+}
+
+// ===== GO BACK =====
+function goBack() {
+  if (history.length === 0) return;
+  const prev = history.pop();
+
+  if (history.length === 0) {
+    document.getElementById('wizard-header').style.display = 'block';
+    document.getElementById('progress-wrap').style.display = 'none';
+  }
+
+  renderQuestion(prev.questionId);
+}
+
+// ===== PROGRESS BAR =====
+function updateProgress(current, total) {
+  const stepsEl = document.getElementById('progress-steps');
+  const labelEl = document.getElementById('progress-label');
+  stepsEl.innerHTML = Array.from({ length: total }, (_, i) => {
+    const state = i + 1 < current ? 'done' : i + 1 === current ? 'active' : '';
+    return `<div class="progress-step ${state}"></div>`;
+  }).join('');
+  labelEl.textContent = `Step ${current} of ${total}`;
+}
+
+// ===== SHOW RESULTS =====
+function showResults() {
+  const schemes = getRecommendedSchemes(history.map(h => h.answer));
+  const summaryLabels = history.map(h => `${h.answer.icon} ${h.answer.label}`);
+
+  const area = document.getElementById('quiz-area');
+  document.getElementById('progress-wrap').style.display = 'none';
+  document.getElementById('back-btn').style.display = 'none';
+
+  // Build the filter params for index.html
+  const firstAnswer = history[0]?.answer?.answer;
+  const categoryMap = {
+    buying: 'Buying',
+    renting: 'Renting',
+    social: 'Social Housing',
+    grants: 'Renovation & Grants'
+  };
+  const category = categoryMap[firstAnswer] || '';
+  const indexUrl = `index.html${category ? `?cat=${encodeURIComponent(category)}` : ''}`;
+
+  area.innerHTML = `
+    <div class="results-card">
+      <div class="results-header">
+        <div class="results-badge">✓ ${schemes.length} scheme${schemes.length !== 1 ? 's' : ''} found for you</div>
+        <div class="results-title">Your recommended<br>housing schemes</div>
+        <div class="results-subtitle">Based on your answers, here's what we found:</div>
+      </div>
+
+      <div class="results-summary">
+        ${summaryLabels.map(l => `<span class="summary-tag">${l}</span>`).join('')}
+      </div>
+
+      ${schemes.length === 0 ? `
+        <div class="no-results">
+          <div class="no-results-icon">🔍</div>
+          <h3>No specific schemes found</h3>
+          <p>Browse all schemes — there may still be options for your situation.</p>
+        </div>
+      ` : `
+        <div class="schemes-list">
+          ${schemes.map((s, i) => {
+            const scheme = SCHEMES[s.id];
+            if (!scheme) return '';
+            return `
+              <a class="scheme-result" href="index.html#${s.id}" target="_blank" rel="noopener"
+                 style="animation: slideUp 0.4s ease ${i * 0.07}s both">
+                <div class="scheme-result-icon">${scheme.icon}</div>
+                <div class="scheme-result-body">
+                  <div class="scheme-result-match">${s.match}</div>
+                  <div class="scheme-result-name">${scheme.name}</div>
+                  <div class="scheme-result-desc">${s.why}</div>
+                </div>
+                <div class="scheme-result-arrow">→</div>
+              </a>
+            `;
+          }).join('')}
+        </div>
+      `}
+
+      <div class="results-footer">
+        <a href="${indexUrl}" class="btn-view-all">View all schemes →</a>
+        <button class="btn-restart" onclick="restartWizard()">↺ Start again</button>
+      </div>
+    </div>
+  `;
+}
+
+// ===== RESTART =====
+function restartWizard() {
+  history = [];
+  currentQuestion = 'q1';
+  document.getElementById('back-btn').style.display = '';
+  document.getElementById('wizard-header').style.display = 'block';
+  document.getElementById('progress-wrap').style.display = 'none';
+  renderQuestion('q1', false);
+}
+
+// ===== INIT =====
+renderQuestion('q1', false);
+</script>
+</body>
+</html>

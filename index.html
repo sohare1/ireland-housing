@@ -698,6 +698,64 @@
       color: var(--text-light);
     }
 
+    /* ===== WIZARD CTA BANNER ===== */
+    .wizard-cta-banner {
+      background: linear-gradient(135deg, #0f3520, #1a4a2e);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 1rem 2rem;
+    }
+
+    .wizard-cta-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .wizard-cta-text {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: rgba(255,255,255,0.85);
+    }
+
+    .wizard-cta-icon { font-size: 1.6rem; flex-shrink: 0; }
+
+    .wizard-cta-text strong {
+      display: block;
+      color: white;
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+    }
+
+    .wizard-cta-text span {
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .wizard-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--gold);
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 100px;
+      padding: 0.65rem 1.5rem;
+      transition: all 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .wizard-cta-btn:hover { background: #b8862a; transform: translateY(-1px); }
+
     /* ===== FOOTER ===== */
     footer {
       background: var(--green-deep);
@@ -782,6 +840,20 @@
       <span class="scrape-spinner"></span>
       Refresh Data Now
     </button>
+  </div>
+</div>
+
+<!-- ===== WIZARD CTA BANNER ===== -->
+<div class="wizard-cta-banner">
+  <div class="wizard-cta-inner">
+    <div class="wizard-cta-text">
+      <span class="wizard-cta-icon">🧭</span>
+      <div>
+        <strong>Not sure which scheme is right for you?</strong>
+        <span>Answer 3 quick questions and we'll find the right schemes for your situation.</span>
+      </div>
+    </div>
+    <a href="wizard.html" class="wizard-cta-btn">Find My Scheme →</a>
   </div>
 </div>
 
@@ -893,6 +965,7 @@
       buildCategoryGrid();
       buildTagFilters();
       renderCards();
+      window.dispatchEvent(new Event('schemesLoaded'));
     } catch (e) {
       console.error('Failed to load schemes:', e);
       document.getElementById('results-count').textContent = 'Failed to load schemes. Please run the scraper.';
@@ -1099,6 +1172,21 @@
 
   // ===== INIT =====
   loadData();
+
+  // Handle ?cat= from wizard redirect
+  const urlParams = new URLSearchParams(window.location.search);
+  const catParam = urlParams.get('cat');
+  if (catParam) {
+    // Wait for data to load, then filter
+    const origBuild = buildCategoryGrid;
+    window.addEventListener('schemesLoaded', () => {
+      const catCard = document.querySelector(`.cat-card[data-cat="${catParam}"]`);
+      if (catCard) {
+        setCategoryFilter(catParam, catCard);
+        catCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  }
 </script>
 </body>
 </html>
