@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ireland Housing Schemes Finder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green-deep: #1a4a2e;
+      --green-mid: #2d7a4a;
+      --green-light: #4caf7a;
+      --green-pale: #e8f5ec;
+      --gold: #c8973a;
+      --gold-light: #f0d98a;
+      --cream: #faf8f3;
+      --white: #ffffff;
+      --text-dark: #1c2b1e;
+      --text-mid: #3d5442;
+      --text-light: #6b8870;
+      --border: #d4e6da;
+      --shadow-sm: 0 2px 8px rgba(26,74,46,0.08);
+      --shadow-md: 0 8px 32px rgba(26,74,46,0.12);
+      --shadow-lg: 0 20px 60px rgba(26,74,46,0.16);
+      --radius: 16px;
+      --radius-sm: 10px;
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--text-dark);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      background: linear-gradient(135deg, var(--green-deep) 0%, #0f3520 60%, #1c4a30 100%);
+      padding: 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .header-inner {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 2rem 3.5rem;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(200,151,58,0.2);
+      border: 1px solid rgba(200,151,58,0.4);
+      color: var(--gold-light);
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 100px;
+      margin-bottom: 1rem;
+    }
+
+    .header-badge::before { content: '🍀'; }
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.15;
+      margin-bottom: 1rem;
+    }
+
+    h1 span {
+      color: var(--gold-light);
+      display: block;
+    }
+
+    .header-sub {
+      color: rgba(255,255,255,0.75);
+      font-size: 1.05rem;
+      font-weight: 300;
+      max-width: 480px;
+    }
+
+    .header-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      text-align: center;
+    }
+
+    .stat-bubble {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.75rem;
+      color: white;
+      backdrop-filter: blur(10px);
+    }
+
+    .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      display: block;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.65);
+      font-weight: 500;
+      margin-top: 4px;
+      display: block;
+    }
+
+    /* ===== SCRAPER CONTROL BAR ===== */
+    .scraper-bar {
+      background: var(--green-deep);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 0.85rem 2rem;
+    }
+
+    .scraper-bar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .last-updated-info {
+      color: rgba(255,255,255,0.65);
+      font-size: 0.82rem;
+      flex: 1;
+    }
+
+    .last-updated-info strong { color: var(--gold-light); }
+
+    .btn-scrape {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--gold);
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 100px;
+      padding: 0.6rem 1.4rem;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .btn-scrape:hover { background: #b8862a; transform: translateY(-1px); }
+    .btn-scrape:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    .scrape-spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    .btn-scrape.running .scrape-spinner { display: block; }
+    .btn-scrape.running .scrape-icon { display: none; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ===== SEARCH + FILTERS ===== */
+    .controls {
+      max-width: 1200px;
+      margin: 2.5rem auto 0;
+      padding: 0 2rem;
+    }
+
+    .search-wrapper {
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1.25rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      font-size: 1.1rem;
+      pointer-events: none;
+    }
+
+    #search-input {
+      width: 100%;
+      padding: 1rem 1.25rem 1rem 3.25rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: 100px;
+      outline: none;
+      transition: var(--transition);
+      color: var(--text-dark);
+      box-shadow: var(--shadow-sm);
+    }
+
+    #search-input:focus {
+      border-color: var(--green-mid);
+      box-shadow: 0 0 0 4px rgba(45,122,74,0.1), var(--shadow-sm);
+    }
+
+    #search-input::placeholder { color: var(--text-light); }
+
+    .filters {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-right: 0.25rem;
+    }
+
+    .filter-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0.45rem 1rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: 2px solid var(--border);
+      background: var(--white);
+      color: var(--text-mid);
+      border-radius: 100px;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .filter-btn:hover {
+      border-color: var(--green-light);
+      color: var(--green-deep);
+      background: var(--green-pale);
+    }
+
+    .filter-btn.active {
+      background: var(--green-deep);
+      border-color: var(--green-deep);
+      color: white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    /* ===== RESULTS INFO ===== */
+    .results-meta {
+      max-width: 1200px;
+      margin: 2rem auto 1rem;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .results-count {
+      font-size: 0.875rem;
+      color: var(--text-light);
+      font-weight: 500;
+    }
+
+    .results-count strong { color: var(--text-dark); }
+
+    /* ===== SCHEME CARDS GRID ===== */
+    .cards-grid {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem 4rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .scheme-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: var(--transition);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .scheme-card:hover {
+      border-color: var(--green-light);
+      box-shadow: var(--shadow-md);
+      transform: translateY(-3px);
+    }
+
+    .card-header {
+      padding: 1.5rem 1.5rem 1rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .card-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--radius-sm);
+      background: var(--green-pale);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .card-meta { flex: 1; min-width: 0; }
+
+    .card-category {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--green-mid);
+      margin-bottom: 0.4rem;
+    }
+
+    .card-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-dark);
+      line-height: 1.3;
+    }
+
+    .card-body {
+      padding: 0 1.5rem 1.25rem;
+      flex: 1;
+    }
+
+    .card-description {
+      font-size: 0.9rem;
+      color: var(--text-mid);
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .tag {
+      padding: 3px 10px;
+      background: var(--green-pale);
+      color: var(--green-deep);
+      font-size: 0.72rem;
+      font-weight: 600;
+      border-radius: 100px;
+      text-transform: capitalize;
+    }
+
+    .card-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-source {
+      font-size: 0.75rem;
+      color: var(--text-light);
+    }
+
+    .card-cta {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--green-mid);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ===== EMPTY STATE ===== */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 5rem 2rem;
+      color: var(--text-light);
+    }
+
+    .empty-state .empty-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+    .empty-state h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+      color: var(--text-mid);
+      margin-bottom: 0.5rem;
+    }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(26,74,46,0.7);
+      backdrop-filter: blur(8px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .modal-overlay.visible {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: var(--white);
+      border-radius: 24px;
+      max-width: 680px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow-lg);
+      transform: scale(0.94) translateY(20px);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .modal-overlay.visible .modal {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-header {
+      background: linear-gradient(135deg, var(--green-deep), #1c5a38);
+      padding: 2rem 2rem 1.75rem;
+      border-radius: 24px 24px 0 0;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: white;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.25); }
+
+    .modal-icon {
+      font-size: 2.5rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .modal-category {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--gold-light);
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: white;
+      line-height: 1.25;
+    }
+
+    .modal-body {
+      padding: 2rem;
+    }
+
+    .modal-section {
+      margin-bottom: 2rem;
+    }
+
+    .modal-section h3 {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--green-mid);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .modal-section h3::before {
+      content: '';
+      display: block;
+      width: 16px;
+      height: 2px;
+      background: var(--green-light);
+      border-radius: 2px;
+    }
+
+    .modal-description {
+      font-size: 1rem;
+      color: var(--text-mid);
+      line-height: 1.7;
+    }
+
+    .modal-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .modal-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      font-size: 0.9rem;
+      color: var(--text-mid);
+    }
+
+    .modal-list li::before {
+      content: '✓';
+      width: 20px;
+      height: 20px;
+      min-width: 20px;
+      background: var(--green-pale);
+      color: var(--green-mid);
+      border-radius: 50%;
+      font-size: 0.65rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1px;
+    }
+
+    .how-to-apply-box {
+      background: var(--green-pale);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--green-mid);
+      border-radius: var(--radius-sm);
+      padding: 1.25rem;
+      font-size: 0.9rem;
+      color: var(--text-mid);
+      line-height: 1.65;
+    }
+
+    .modal-footer {
+      padding: 1.5rem 2rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--green-deep);
+      color: white;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 100px;
+      padding: 0.85rem 1.75rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .btn-primary:hover { background: var(--green-mid); }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--text-mid);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border: 2px solid var(--border);
+      border-radius: 100px;
+      padding: 0.75rem 1.5rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .btn-secondary:hover { border-color: var(--green-light); color: var(--green-deep); }
+
+    /* ===== CATEGORIES SUMMARY ===== */
+    .category-grid {
+      max-width: 1200px;
+      margin: 2.5rem auto 0;
+      padding: 0 2rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+    }
+
+    .cat-card {
+      background: var(--white);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+    }
+
+    .cat-card:hover, .cat-card.active {
+      border-color: var(--green-mid);
+      background: var(--green-pale);
+    }
+
+    .cat-card.active { border-color: var(--green-deep); }
+
+    .cat-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .cat-name {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-dark);
+      margin-bottom: 0.25rem;
+    }
+    .cat-count {
+      font-size: 0.8rem;
+      color: var(--text-light);
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: var(--green-deep);
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.82rem;
+      line-height: 1.7;
+    }
+
+    footer strong { color: rgba(255,255,255,0.9); }
+    footer a { color: var(--gold-light); text-decoration: none; }
+
+    /* ===== NOTIFICATION ===== */
+    .notification {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: var(--green-deep);
+      color: white;
+      padding: 1rem 1.5rem;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      z-index: 2000;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transform: translateY(100px);
+      transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      max-width: 360px;
+    }
+
+    .notification.show { transform: translateY(0); }
+    .notification.success { background: var(--green-mid); }
+    .notification.error { background: #c0392b; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .header-inner { grid-template-columns: 1fr; }
+      .header-stats { flex-direction: row; justify-content: center; }
+      .cards-grid { grid-template-columns: 1fr; padding: 0 1rem 4rem; }
+      .controls { padding: 0 1rem; }
+      .category-grid { padding: 0 1rem; grid-template-columns: repeat(2, 1fr); }
+      .results-meta { padding: 0 1rem; }
+      .modal-body { padding: 1.5rem; }
+      .modal-footer { padding: 1.25rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-inner">
+    <div>
+      <div class="header-badge">Official Irish Housing Schemes</div>
+      <h1>Find Your<span>Housing Support</span></h1>
+      <p class="header-sub">Explore all government housing schemes, grants and social supports available in Ireland — in one easy place.</p>
+    </div>
+    <div class="header-stats">
+      <div class="stat-bubble">
+        <span class="stat-num" id="scheme-count">15</span>
+        <span class="stat-label">Available Schemes</span>
+      </div>
+      <div class="stat-bubble">
+        <span class="stat-num">4</span>
+        <span class="stat-label">Categories</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===== SCRAPER CONTROL BAR ===== -->
+<div class="scraper-bar">
+  <div class="scraper-bar-inner">
+    <p class="last-updated-info">
+      Data sourced from Citizens Information, housing.gov.ie &amp; SEAI.
+      Last updated: <strong id="last-updated-text">Loading...</strong>
+      &nbsp;·&nbsp; Runs automatically every Monday at 6am.
+    </p>
+    <button class="btn-scrape" id="scrape-btn" onclick="triggerScrape()">
+      <span class="scrape-icon">🔄</span>
+      <span class="scrape-spinner"></span>
+      Refresh Data Now
+    </button>
+  </div>
+</div>
+
+<!-- ===== CATEGORY QUICK FILTERS ===== -->
+<div class="category-grid" id="category-grid">
+  <!-- Injected by JS -->
+</div>
+
+<!-- ===== SEARCH AND FILTERS ===== -->
+<div class="controls">
+  <div class="search-wrapper">
+    <span class="search-icon">🔍</span>
+    <input type="search" id="search-input" placeholder="Search schemes, e.g. 'first time buyer', 'grant', 'rent support'..." autocomplete="off" />
+  </div>
+  <div class="filters" id="tag-filters">
+    <span class="filter-label">Filter:</span>
+    <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All Schemes</button>
+  </div>
+</div>
+
+<!-- ===== RESULTS META ===== -->
+<div class="results-meta">
+  <p class="results-count" id="results-count">Loading schemes...</p>
+</div>
+
+<!-- ===== CARDS GRID ===== -->
+<div class="cards-grid" id="cards-grid">
+  <!-- Injected by JS -->
+</div>
+
+<!-- ===== MODAL ===== -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOnOverlay(event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-text">
+    <div class="modal-header">
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
+      <div class="modal-icon" id="modal-icon"></div>
+      <div class="modal-category" id="modal-category"></div>
+      <div class="modal-title" id="modal-title-text"></div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <h3>About This Scheme</h3>
+        <p class="modal-description" id="modal-description"></p>
+      </div>
+      <div class="modal-section" id="modal-eligibility-section">
+        <h3>Eligibility</h3>
+        <ul class="modal-list" id="modal-eligibility"></ul>
+      </div>
+      <div class="modal-section" id="modal-benefits-section">
+        <h3>Benefits</h3>
+        <ul class="modal-list" id="modal-benefits"></ul>
+      </div>
+      <div class="modal-section">
+        <h3>How to Apply</h3>
+        <div class="how-to-apply-box" id="modal-apply"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <a id="modal-link" href="#" target="_blank" rel="noopener" class="btn-primary">
+        Go to Official Page ↗
+      </a>
+      <button class="btn-secondary" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NOTIFICATION ===== -->
+<div class="notification" id="notification"></div>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <p><strong>Ireland Housing Schemes Finder</strong></p>
+  <p>Data sourced from <a href="https://www.citizensinformation.ie" target="_blank">citizensinformation.ie</a>, <a href="https://www.gov.ie/en/organisation/department-of-housing-local-government-and-heritage/" target="_blank">housing.gov.ie</a> &amp; <a href="https://www.seai.ie" target="_blank">seai.ie</a></p>
+  <p style="margin-top:0.75rem; font-size:0.75rem;">This tool is for information purposes. Always check official sources for the most up-to-date eligibility and application details.</p>
+</footer>
+
+<script>
+  // ===== CONFIG =====
+  const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'
+    : null; // null = use local JSON file
+
+  const CATEGORIES = {
+    "Buying": { icon: "🏡", color: "#e8f5ec" },
+    "Renting": { icon: "🔑", color: "#e8f0f5" },
+    "Social Housing": { icon: "🏢", color: "#f5f0e8" },
+    "Renovation & Grants": { icon: "🔨", color: "#f5e8ec" },
+  };
+
+  let allSchemes = [];
+  let activeFilter = "all";
+  let activeCategory = "all";
+  let searchTerm = "";
+
+  // ===== LOAD DATA =====
+  async function loadData() {
+    try {
+      let data;
+      if (API_BASE) {
+        const res = await fetch(`${API_BASE}/schemes`);
+        data = await res.json();
+      } else {
+        const res = await fetch('data/schemes.json');
+        data = await res.json();
+      }
+      allSchemes = data.schemes || [];
+      updateLastUpdated(data.last_scraped);
+      document.getElementById('scheme-count').textContent = allSchemes.length;
+      buildCategoryGrid();
+      buildTagFilters();
+      renderCards();
+    } catch (e) {
+      console.error('Failed to load schemes:', e);
+      document.getElementById('results-count').textContent = 'Failed to load schemes. Please run the scraper.';
+    }
+  }
+
+  function updateLastUpdated(iso) {
+    if (!iso) { document.getElementById('last-updated-text').textContent = 'Unknown'; return; }
+    const d = new Date(iso);
+    document.getElementById('last-updated-text').textContent = d.toLocaleDateString('en-IE', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    });
+  }
+
+  // ===== CATEGORY GRID =====
+  function buildCategoryGrid() {
+    const cats = {};
+    allSchemes.forEach(s => { cats[s.category] = (cats[s.category] || 0) + 1; });
+    const grid = document.getElementById('category-grid');
+    grid.innerHTML = `
+      <div class="cat-card active" data-cat="all" onclick="setCategoryFilter('all', this)">
+        <div class="cat-icon">🇮🇪</div>
+        <div class="cat-name">All Schemes</div>
+        <div class="cat-count">${allSchemes.length} total</div>
+      </div>
+    ` + Object.entries(cats).map(([cat, count]) => `
+      <div class="cat-card" data-cat="${cat}" onclick="setCategoryFilter('${cat}', this)">
+        <div class="cat-icon">${(CATEGORIES[cat] || {}).icon || '📋'}</div>
+        <div class="cat-name">${cat}</div>
+        <div class="cat-count">${count} scheme${count !== 1 ? 's' : ''}</div>
+      </div>
+    `).join('');
+  }
+
+  // ===== TAG FILTERS =====
+  function buildTagFilters() {
+    const tags = new Set();
+    allSchemes.forEach(s => (s.tags || []).forEach(t => tags.add(t)));
+    const container = document.getElementById('tag-filters');
+    const common = ["first-time buyer", "renting", "grants", "social housing", "renovation", "free", "mortgage"];
+    const featured = [...tags].filter(t => common.includes(t));
+    featured.forEach(tag => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-btn';
+      btn.setAttribute('data-filter', tag);
+      btn.textContent = tag;
+      btn.onclick = () => setFilter(tag, btn);
+      container.appendChild(btn);
+    });
+  }
+
+  // ===== FILTERS =====
+  function setCategoryFilter(cat, el) {
+    activeCategory = cat;
+    document.querySelectorAll('.cat-card').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    renderCards();
+  }
+
+  function setFilter(filter, el) {
+    activeFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    renderCards();
+  }
+
+  document.getElementById('search-input').addEventListener('input', e => {
+    searchTerm = e.target.value.toLowerCase().trim();
+    renderCards();
+  });
+
+  // ===== RENDER CARDS =====
+  function getFiltered() {
+    return allSchemes.filter(s => {
+      const matchesCategory = activeCategory === 'all' || s.category === activeCategory;
+      const matchesFilter = activeFilter === 'all' || (s.tags || []).includes(activeFilter) || s.category === activeFilter;
+      const matchesSearch = !searchTerm ||
+        s.name.toLowerCase().includes(searchTerm) ||
+        s.description.toLowerCase().includes(searchTerm) ||
+        (s.tags || []).some(t => t.includes(searchTerm)) ||
+        s.category.toLowerCase().includes(searchTerm);
+      return matchesCategory && matchesFilter && matchesSearch;
+    });
+  }
+
+  function renderCards() {
+    const filtered = getFiltered();
+    const grid = document.getElementById('cards-grid');
+    document.getElementById('results-count').innerHTML = `Showing <strong>${filtered.length}</strong> of <strong>${allSchemes.length}</strong> schemes`;
+
+    if (filtered.length === 0) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <h3>No schemes found</h3>
+          <p>Try different search terms or clear your filters.</p>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map((s, i) => `
+      <div class="scheme-card" onclick="openModal('${s.id}')" style="animation-delay:${i * 0.04}s" role="button" tabindex="0" aria-label="${s.name}">
+        <div class="card-header">
+          <div class="card-icon">${s.icon || '🏠'}</div>
+          <div class="card-meta">
+            <div class="card-category">${s.category}</div>
+            <div class="card-name">${s.name}</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <p class="card-description">${s.description}</p>
+        </div>
+        <div class="card-tags">
+          ${(s.tags || []).slice(0, 4).map(t => `<span class="tag">${t}</span>`).join('')}
+        </div>
+        <div class="card-footer">
+          <span class="card-source">📄 ${s.source}</span>
+          <span class="card-cta">View details →</span>
+        </div>
+      </div>
+    `).join('');
+
+    // Keyboard support
+    grid.querySelectorAll('.scheme-card').forEach(card => {
+      card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') card.click(); });
+    });
+  }
+
+  // ===== MODAL =====
+  function openModal(id) {
+    const s = allSchemes.find(x => x.id === id);
+    if (!s) return;
+
+    document.getElementById('modal-icon').textContent = s.icon || '🏠';
+    document.getElementById('modal-category').textContent = s.category;
+    document.getElementById('modal-title-text').textContent = s.name;
+    document.getElementById('modal-description').textContent = s.description;
+
+    const eligList = document.getElementById('modal-eligibility');
+    eligList.innerHTML = (s.eligibility || []).map(e => `<li>${e}</li>`).join('');
+
+    const benefitsList = document.getElementById('modal-benefits');
+    benefitsList.innerHTML = (s.benefits || []).map(b => `<li>${b}</li>`).join('');
+
+    document.getElementById('modal-apply').textContent = s.how_to_apply;
+    document.getElementById('modal-link').href = s.url;
+
+    document.getElementById('modal-overlay').classList.add('visible');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('visible');
+    document.body.style.overflow = '';
+  }
+
+  function closeModalOnOverlay(e) {
+    if (e.target === document.getElementById('modal-overlay')) closeModal();
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  // ===== SCRAPER TRIGGER =====
+  async function triggerScrape() {
+    if (!API_BASE) {
+      showNotification('⚠️ Scraper API not running. Start the Python backend (scheduler.py --serve) to refresh live data.', 'error');
+      return;
+    }
+    const btn = document.getElementById('scrape-btn');
+    btn.classList.add('running');
+    btn.disabled = true;
+    showNotification('🔄 Scraping government websites... this may take a minute.', '');
+
+    try {
+      const res = await fetch(`${API_BASE}/scrape`, { method: 'POST' });
+      const data = await res.json();
+      if (res.status === 409) {
+        showNotification('⏳ Scraper is already running. Please wait.', 'error');
+      } else {
+        showNotification('✅ Scrape started! Data will refresh shortly.', 'success');
+        setTimeout(async () => {
+          await loadData();
+          showNotification('✅ Data refreshed successfully!', 'success');
+          btn.classList.remove('running');
+          btn.disabled = false;
+        }, 12000);
+        return;
+      }
+    } catch (e) {
+      showNotification('❌ Could not connect to scraper API. Is it running?', 'error');
+    }
+
+    btn.classList.remove('running');
+    btn.disabled = false;
+  }
+
+  function showNotification(msg, type = '') {
+    const n = document.getElementById('notification');
+    n.textContent = msg;
+    n.className = 'notification show ' + type;
+    clearTimeout(n._timer);
+    n._timer = setTimeout(() => n.classList.remove('show'), 5000);
+  }
+
+  // ===== INIT =====
+  loadData();
+</script>
+</body>
+</html>
