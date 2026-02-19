@@ -1,13 +1,14 @@
 # 🍀 Ireland Housing Schemes Finder
 
-A complete website + scraper for finding Irish government housing schemes, grants, and supports.
+A complete website + scraper for finding Irish government housing schemes, grants, and supports. Includes a 3-question wizard that guides users to the right schemes for their situation.
 
 ## 📁 Project Structure
 
 ```
 ireland-housing/
 ├── frontend/
-│   ├── index.html          ← The website (open this in a browser)
+│   ├── index.html          ← The main website
+│   ├── wizard.html         ← 3-question scheme finder wizard
 │   └── data/
 │       └── schemes.json    ← Housing data (auto-updated by scraper)
 │
@@ -19,51 +20,57 @@ ireland-housing/
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Full Setup with Live Scraping)
 
-### Option 1: Just open the website (no backend)
-The website works standalone with bundled data:
-```bash
-open frontend/index.html
-```
-Or serve it locally:
-```bash
-cd frontend
-python3 -m http.server 8080
-# Visit http://localhost:8080
-```
+You'll need **3 terminal tabs** running at the same time.
 
----
-
-### Option 2: Full setup with live scraping
-
-**Step 1: Install Python dependencies**
+### Step 1: Install Python dependencies
 ```bash
 cd scrapers
 pip install -r requirements.txt
 ```
 
-**Step 2: Run the scraper now (ad-hoc)**
+### Step 2 — Terminal Tab 1: Start the API + weekly scheduler
+
+> ⚠️ **macOS users:** Port 5000 is used by AirPlay Receiver. Use `--port 8080` instead, or disable AirPlay Receiver in **System Settings → General → AirDrop & Handoff**.
+
+```bash
+# macOS:
+python3 scheduler.py --serve --port 8080
+
+# Linux / Windows (or if you disabled AirPlay):
+python3 scheduler.py --serve
+```
+
+This starts:
+- A **REST API** on `http://localhost:8080` (or 5000)
+- A **weekly scheduler** that auto-scrapes every Monday at 6am
+
+### Step 3 — Terminal Tab 2: Run the scraper once to fetch data
 ```bash
 python3 scheduler.py --scrape-now
 ```
-This fetches the latest data from government websites and saves it to `frontend/data/schemes.json`.
+This fetches the latest scheme data from government websites and saves it to `frontend/data/schemes.json`. You'll see `✅ Saved 15 schemes` when complete.
 
-**Step 3: Start the API + weekly scheduler**
-```bash
-python3 scheduler.py --serve
-```
-This starts:
-- A **REST API** on `http://localhost:5000`
-- A **weekly scheduler** that auto-scrapes every Monday at 6am
-
-**Step 4: Open the website**
+### Step 4 — Terminal Tab 3: Serve the frontend
 ```bash
 cd frontend
-python3 -m http.server 8080
-# Visit http://localhost:8080
+python3 -m http.server 3000
 ```
-The website will detect the running API and enable the "Refresh Data Now" button.
+
+Now visit **http://localhost:3000** in your browser. 🎉
+
+---
+
+## 🌐 Option: Just open the website (no backend)
+
+The website works standalone using the bundled `data/schemes.json` — no Python needed:
+```bash
+cd frontend
+python3 -m http.server 3000
+# Visit http://localhost:3000
+```
+The "Refresh Data Now" button won't work without the backend running, but all schemes will display correctly.
 
 ---
 
@@ -82,12 +89,18 @@ The website will detect the running API and enable the "Refresh Data Now" button
 The scheduler runs automatically **every Monday at 6am**. To change the schedule, edit `scheduler.py`:
 
 ```python
-# Change from weekly Monday to daily at 8am:
+# Change to daily at 8am:
 schedule.every().day.at("08:00").do(do_scrape)
 
 # Change to every 3 days:
 schedule.every(3).days.do(do_scrape)
 ```
+
+---
+
+## 🧭 Scheme Finder Wizard
+
+`wizard.html` guides users through 3 questions about their situation (goal, status, income/property type) and recommends the most relevant schemes with personalised explanations. It links back to the main site with the correct category pre-filtered.
 
 ---
 
@@ -130,18 +143,15 @@ schedule.every(3).days.do(do_scrape)
 
 ## 🛠️ Deployment
 
-### GitHub Pages (free, no backend)
-```bash
-# Push the frontend/ folder to a GitHub repo
-# Enable GitHub Pages in repo settings → use main branch / root or /frontend
-```
+### GitHub Pages (free, frontend only)
+Enable GitHub Pages in your repo settings pointing to the `frontend/` folder. The site will work with the bundled data — no backend required.
 
-### With a server (full scraping)
-Run `scheduler.py --serve` on a VPS or cloud server. Use nginx or a reverse proxy to serve the frontend and proxy API requests to port 5000.
+### With a server (full live scraping)
+Run `scheduler.py --serve --port 8080` on a VPS or cloud server. Use nginx as a reverse proxy to serve the frontend and forward API requests to port 8080.
 
 ---
 
 ## 📝 Notes
 - Always verify scheme details on official government websites before applying
-- Schemes change — the scraper keeps data current
+- Schemes change — the scraper keeps data current with weekly auto-updates
 - The scraper is polite: adds delays between requests and uses a proper User-Agent
